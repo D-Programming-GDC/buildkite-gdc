@@ -21,8 +21,8 @@ services:
     hostname: ubuntu-arm64
     environment:
       BUILDKITE_AGENT_TAGS: |-
-        native=1
-        ubuntu-aarch64=1
+        native=1,
+        ubuntu-aarch64=1,
     build:
       args:
         IMAGE: arm64v8/ubuntu
@@ -34,9 +34,9 @@ services:
     hostname: ubuntu-arm32
     environment:
       BUILDKITE_AGENT_TAGS: |-
-        native=1
-        ubuntu-arm=1
-        ubuntu-armhf=1
+        native=1,
+        ubuntu-arm=1,
+        ubuntu-armhf=1,
     build:
       args:
         IMAGE: arm32v7/ubuntu
@@ -48,16 +48,16 @@ services:
     hostname: ubuntu-cross1
     environment:
       BUILDKITE_AGENT_TAGS: |-
-        cross=1
-        ubuntu-aarch64=1
-        ubuntu-arm=1
-        ubuntu-armhf=1
-        ubuntu-mips=1
-        ubuntu-mips64el=1
-        ubuntu-mipsel=1
-        ubuntu-powerpc64le=1
-        ubuntu-systemz=1
-        ubuntu-sparc64=1
+        cross=1,
+        ubuntu-aarch64=1,
+        ubuntu-arm=1,
+        ubuntu-armhf=1,
+        ubuntu-mips=1,
+        ubuntu-mips64el=1,
+        ubuntu-mipsel=1,
+        ubuntu-powerpc64le=1,
+        ubuntu-systemz=1,
+        ubuntu-sparc64=1,
     build:
       args:
         IMAGE: ubuntu
