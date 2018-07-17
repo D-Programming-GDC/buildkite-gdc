@@ -22,6 +22,7 @@ if [ "${SEMAPHORE}" = "true" ]; then
     build_host_canonical=$(/usr/share/misc/config.sub ${build_host})
     build_target=$(/usr/share/misc/config.guess)
     build_target_canonical=$(/usr/share/misc/config.sub ${build_target})
+    make_flags="-j$(nproc)"
 elif [ "${BUILDKITE}" = "true" ]; then
     project_dir=${PWD}
     cache_dir=${BUILDKITE_CACHE_DIR}
@@ -29,6 +30,7 @@ elif [ "${BUILDKITE}" = "true" ]; then
     build_host_canonical=$(/usr/share/misc/config.sub ${build_host})
     build_target=${BUILDKITE_TARGET}
     build_target_canonical=$(/usr/share/misc/config.sub ${build_target})
+    make_flags="-j$(nproc) -sw"
 else
     echo "Unhandled CI environment"
     exit 1
@@ -200,19 +202,19 @@ setup() {
 build() {
     ## Build the bare-minimum in order to run tests.
     cd ${project_dir}/build
-    make -j$(nproc) all-gcc || exit 1
+    make ${make_flags} all-gcc || exit 1
 
     # Note: libstdc++ and libphobos are built separately so that build errors don't mix.
     if [ "${build_supports_phobos}" = "yes" ]; then
-        make -j$(nproc) all-target-libstdc++-v3 || exit 1
-        make -j$(nproc) all-target-libphobos || exit 1
+        make ${make_flags} all-target-libstdc++-v3 || exit 1
+        make ${make_flags} all-target-libphobos || exit 1
     fi
 }
 
 testsuite() {
     ## Run just the compiler testsuite.
     cd ${project_dir}/build
-    make -j$(nproc) check-gcc-d RUNTESTFLAGS="${build_test_flags}"
+    make ${make_flags} check-gcc-d RUNTESTFLAGS="${build_test_flags}"
 
     # For now, be lenient towards targets with no phobos support,
     # and ignore unresolved test failures.
@@ -239,7 +241,7 @@ unittests() {
     ## Run just the library unittests.
     if [ "${build_supports_phobos}" = "yes" ]; then
         cd ${project_dir}/build
-        if ! make -j$(nproc) check-target-libphobos RUNTESTFLAGS="${build_test_flags}"; then
+        if ! make ${make_flags} check-target-libphobos RUNTESTFLAGS="${build_test_flags}"; then
             echo "== Unittest has failures =="
             exit 1
         fi
