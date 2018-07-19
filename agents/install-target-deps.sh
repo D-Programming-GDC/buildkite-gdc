@@ -10,8 +10,8 @@
 #  libc_packages        List of all libc-related packages to install.
 
 target=${1}
-install_packages="gcc-${DOCKER_GCC_VERSION} g++-${DOCKER_GCC_VERSION} gdc-${DOCKER_GCC_VERSION} \
-    autogen autoconf2.64 automake1.11 bison dejagnu flex make patch"
+gcc_versions=(5 6 7)
+install_packages="autogen autoconf2.64 automake1.11 bison dejagnu flex make patch"
 binutils_packages="binutils"
 libc_packages="libc6-dev"
 
@@ -21,6 +21,12 @@ apt-get install --no-install-recommends -qq \
     apt-transport-https bzip2 curl software-properties-common xz-utils
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
 apt-get update -qq
+
+install_packages="${install_packages} gcc g++ gdc"
+for version in ${gcc_versions[@]}; do
+    install_packages="${install_packages} \
+        gcc-${version} g++-${version} gdc-${version}"
+done
 
 # Do we need something more specific for the worker?
 case ${target} in
@@ -76,6 +82,21 @@ case ${target} in
             libc6-dev-sh4-cross \
             libc6-dev-sparc64-cross \
             libc6-dev-sparc-sparc64-cross"
+        ;;
+
+    ubuntu-native-arm32)
+        install_packages="${install_packages} \
+            gcc-multilib g++-multilib gdc-multilib"
+        for version in ${gcc_versions[@]}; do
+            install_packages="${install_packages} \
+                gcc-${version}-multilib \
+                g++-${version}-multilib \
+                gdc-${version}-multilib"
+        done
+        binutils_packages="${binutils_packages} \
+            binutils-multiarch"
+        libc_packages="${libc_packages} \
+            libc6-dev-armel"
         ;;
 
     *)

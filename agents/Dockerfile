@@ -3,8 +3,6 @@ ARG IMAGE
 
 FROM $IMAGE:16.04
 
-ENV DOCKER_GCC_VERSION 7
-
 # The target(s) that the worker will build for.
 ARG TARGET
 
