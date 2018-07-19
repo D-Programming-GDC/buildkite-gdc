@@ -14,87 +14,6 @@
 #
 # See https://buildkite.com/docs/builds/environment-variables
 #
-## Commonize CI environment variables.
-if [ "${SEMAPHORE}" = "true" ]; then
-    project_dir=${SEMAPHORE_PROJECT_DIR}
-    cache_dir=${SEMAPHORE_CACHE_DIR}
-    build_host=$(/usr/share/misc/config.guess)
-    build_host_canonical=$(/usr/share/misc/config.sub ${build_host})
-    build_target=$(/usr/share/misc/config.guess)
-    build_target_canonical=$(/usr/share/misc/config.sub ${build_target})
-    make_flags="-j$(nproc)"
-elif [ "${BUILDKITE}" = "true" ]; then
-    project_dir=${PWD}
-    cache_dir=${BUILDKITE_CACHE_DIR}
-    build_host=$(/usr/share/misc/config.guess)
-    build_host_canonical=$(/usr/share/misc/config.sub ${build_host})
-    build_target=${BUILDKITE_TARGET}
-    build_target_canonical=$(/usr/share/misc/config.sub ${build_target})
-    make_flags="-j$(nproc) -sw"
-else
-    echo "Unhandled CI environment"
-    exit 1
-fi
-
-## Options determined by target, what steps to skip, or extra flags to add.
-## Also, should the testsuite be ran under a simulator?
-#
-# build_supports_phobos:    whether to build phobos and run unittests.
-# build_enable_languages:   which languages to build, this affects whether C++
-#                           or LTO tests are ran in the testsuite.
-# build_configure_flags:    extra configure flags for the target.
-# build_test_flags:         options to pass to RUNTESTFLAGS.
-#
-build_supports_phobos='yes'
-build_enable_languages='c++,d,lto'
-build_configure_flags=''
-case ${build_target_canonical} in
-    i[34567]86-*-*      \
-  | x86_64-*-*)
-        if [ "${build_host_canonical}" != "${build_target_canonical}" ]; then
-            build_test_flags='--target_board=buildci-generic-sim'
-        fi
-        ;;
-  arm-*-*eabihf)
-        build_configure_flags='--with-arch=armv7-a --with-fpu=vfpv3-d16 --with-float=hard'
-        ;;
-  arm*-*-*eabi)
-        build_configure_flags='--with-arch=armv5t --with-float=soft'
-        ;;
-  mips-*-*|mipsel-*-*)
-        build_configure_flags='--with-arch=mips32r2'
-        ;;
-  mips64*-*-*)
-        build_configure_flags='--with-arch-64=mips64r2 --with-abi=64'
-        ;;
-  powerpc64*-*-*)
-        build_configure_flags='--with-cpu=power7'
-        ;;
-    *)
-        build_supports_phobos='no'
-        build_enable_languages='c++,d --disable-lto'
-        ;;
-esac
-
-build_test_flags=''
-if [ "${build_host_canonical}" != "${build_target_canonical}" ]; then
-    # Building a cross compiler, need to explicitly say where to find native headers.
-    build_configure_flags="${build_configure_flags} --with-native-system-header-dir=/usr/${build_target}/include"
-
-    # Note: setting target board to something other than "generic" only makes
-    # sense if phobos is being built. Without phobos, all runnable tests will
-    # all fail as being 'UNRESOLVED', and so are never ran anyway.
-    case ${build_target_canonical} in
-        arm*-*-*)
-            build_test_flags='--target_board=buildci-arm-sim'
-            ;;
-
-        *)
-            build_test_flags='--target_board=buildci-generic-sim'
-            ;;
-    esac
-fi
-
 ## Find out which branch we are building.
 gcc_version=$(cat gcc.version)
 
@@ -141,6 +60,114 @@ fi
 export CC="gcc-${host_package}"
 export CXX="g++-${host_package}"
 export GDC="gdc-${host_package}"
+
+environment() {
+    ## Determine what flags to use for configure, build and testing the compiler.
+    ## Commonize CI environment variables.
+    #
+    # project_dir:              directory of checked out sources.
+    # cache_dir:                tarballs of downloaded dependencies cached
+    #                           between builds.
+    # build_host:               host triplet that build is ran from.
+    # build_host_canonical:     canonical version of host triplet.
+    # build_target:             target triplet of the compiler to build.
+    # build_target_canonical:   canonical version of target triplet.
+    # make_flags:               flags to pass to make.
+    #
+    if [ "${SEMAPHORE}" = "true" ]; then
+        project_dir=${SEMAPHORE_PROJECT_DIR}
+        cache_dir=${SEMAPHORE_CACHE_DIR}
+        build_host=$($CC -dumpmachine)
+        build_host_canonical=$(/usr/share/misc/config.sub ${build_host})
+        build_target=${build_host}
+        build_target_canonical=${build_host_canonical}
+        make_flags="-j$(nproc)"
+    elif [ "${BUILDKITE}" = "true" ]; then
+        project_dir=${PWD}
+        cache_dir=${BUILDKITE_CACHE_DIR}
+        build_host=$($CC -dumpmachine)
+        build_host_canonical=$(/usr/share/misc/config.sub ${build_host})
+        build_target=${BUILDKITE_TARGET}
+        build_target_canonical=$(/usr/share/misc/config.sub ${build_target})
+        make_flags="-j$(nproc) -sw"
+    else
+        echo "Unhandled CI environment"
+        exit 1
+    fi
+
+    ## Options determined by target, what steps to skip, or extra flags to add.
+    ## Also, should the testsuite be ran under a simulator?
+    #
+    # build_supports_phobos:    whether to build phobos and run unittests.
+    # build_enable_languages:   which languages to build, this affects whether C++
+    #                           or LTO tests are ran in the testsuite.
+    # build_configure_flags:    extra configure flags for the target.
+    # build_test_flags:         options to pass to RUNTESTFLAGS.
+    #
+    build_supports_phobos='yes'
+    build_enable_languages='c++,d,lto'
+    build_configure_flags=''
+    build_test_flags=''
+
+    # Check whether this is a cross or multiarch compiler.
+    if [ "${build_host_canonical}" != "${build_target_canonical}" ]; then
+        multilib_targets=( $(${CC} -print-multi-lib | cut -f2 -d\;) )
+        is_cross_compiler=1
+        for multilib in ${multilib_targets[@]}; do
+            build_multiarch=$(${CC} -print-multiarch ${multilib/@/-})
+            build_multiarch_canonical=$(/usr/share/misc/config.sub ${build_multiarch})
+            if [ "${build_multiarch_canonical}" = "${build_target_canonical}" ]; then
+                is_cross_compiler=0
+                break
+            fi
+        done
+
+        # Building a cross compiler, need to explicitly say where to find native headers.
+        if [ ${is_cross_compiler} -eq 1 ]; then
+            build_configure_flags="--with-native-system-header-dir=/usr/${build_target}/include"
+
+            # Note: setting target board to something other than "generic" only makes
+            # sense if phobos is being built. Without phobos, all runnable tests will
+            # all fail as being 'UNRESOLVED', and so are never ran anyway.
+            case ${build_target_canonical} in
+                arm*-*-*)
+                    build_test_flags='--target_board=buildci-arm-sim'
+                    ;;
+                *)
+                    build_test_flags='--target_board=buildci-generic-sim'
+                    ;;
+            esac
+        fi
+    fi
+
+    # Determine correct flags for configuring a compiler for target.
+    case ${build_target_canonical} in
+      arm-*-*eabihf)
+            build_configure_flags="${build_configure_flags} \
+                --with-arch=armv7-a --with-fpu=vfpv3-d16 --with-float=hard --with-mode=thumb"
+            ;;
+      arm*-*-*eabi)
+            build_configure_flags="${build_configure_flags} \
+                --with-arch=armv5t --with-float=soft"
+            ;;
+      mips-*-*|mipsel-*-*)
+            build_configure_flags="${build_configure_flags} \
+                --with-arch=mips32r2"
+            ;;
+      mips64*-*-*)
+            build_configure_flags="${build_configure_flags} \
+                --with-arch-64=mips64r2 --with-abi=64"
+            ;;
+      powerpc64*-*-*)
+            build_configure_flags="${build_configure_flags} \
+                --with-cpu=power7"
+            ;;
+      *)
+            build_supports_phobos='no'
+            build_enable_languages='c++,d --disable-lto'
+            ;;
+    esac
+}
 
 installdeps() {
     ## Install build dependencies.
@@ -196,6 +223,7 @@ configure() {
 
 setup() {
     installdeps
+    environment
     configure
 }
 
@@ -251,6 +279,7 @@ unittests() {
 
 ## Run a single build task or all at once.
 if [ "$1" != "" ]; then
+    environment
     $1
 else
     setup
