@@ -99,6 +99,7 @@ environment() {
     ## Also, should the testsuite be ran under a simulator?
     #
     # build_supports_phobos:    whether to build phobos and run unittests.
+    # build_target_phobos:      where to run the phobos testsuite from.
     # build_enable_languages:   which languages to build, this affects whether C++
     #                           or LTO tests are ran in the testsuite.
     # build_prebuild_script:    script to run after sources have been extracted.
@@ -106,6 +107,7 @@ environment() {
     # build_test_flags:         options to pass to RUNTESTFLAGS.
     #
     build_supports_phobos='yes'
+    build_target_phobos=''
     build_enable_languages='c++,d,lto'
     build_prebuild_script=''
     build_configure_flags=''
@@ -124,6 +126,7 @@ environment() {
             if [ "${build_multiarch_canonical}" = "${build_target_canonical}" ]; then
                 build_target=$build_host
                 build_target_canonical=$build_host_canonical
+                build_target_phobos="${build_target}/$(${CC} ${multilib/@/-} -print-multi-directory)/libphobos"
                 build_test_flags="--target_board=unix{${multilib/@/-}}"
                 build_configure_flags='--enable-multilib --enable-multiarch'
                 is_cross_compiler=0
@@ -147,6 +150,10 @@ environment() {
                     ;;
             esac
         fi
+    fi
+
+    if [ "${build_target_phobos}" = "" ]; then
+	build_target_phobos="${build_target}/libphobos"
     fi
 
     # Determine correct flags for configuring a compiler for target.
@@ -284,7 +291,7 @@ unittests() {
     ## Run just the library unittests.
     if [ "${build_supports_phobos}" = "yes" ]; then
         cd ${project_dir}/build
-        if ! make ${make_flags} check-target-libphobos RUNTESTFLAGS="${build_test_flags}"; then
+        if ! make ${make_flags} -C ${build_target_phobos} check RUNTESTFLAGS="${build_test_flags}"; then
             echo "== Unittest has failures =="
             exit 1
         fi
