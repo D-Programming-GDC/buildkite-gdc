@@ -101,11 +101,13 @@ environment() {
     # build_supports_phobos:    whether to build phobos and run unittests.
     # build_enable_languages:   which languages to build, this affects whether C++
     #                           or LTO tests are ran in the testsuite.
+    # build_prebuild_script:    script to run after sources have been extracted.
     # build_configure_flags:    extra configure flags for the target.
     # build_test_flags:         options to pass to RUNTESTFLAGS.
     #
     build_supports_phobos='yes'
     build_enable_languages='c++,d,lto'
+    build_prebuild_script=''
     build_configure_flags=''
     build_test_flags=''
 
@@ -113,10 +115,17 @@ environment() {
     if [ "${build_host_canonical}" != "${build_target_canonical}" ]; then
         multilib_targets=( $(${CC} -print-multi-lib | cut -f2 -d\;) )
         is_cross_compiler=1
+
         for multilib in ${multilib_targets[@]}; do
             build_multiarch=$(${CC} -print-multiarch ${multilib/@/-})
             build_multiarch_canonical=$(/usr/share/misc/config.sub ${build_multiarch})
+
+            # This is a multiarch compiler, update target to the host compiler.
             if [ "${build_multiarch_canonical}" = "${build_target_canonical}" ]; then
+                build_target=$build_host
+                build_target_canonical=$build_host_canonical
+                build_test_flags="--target_board=unix{${multilib/@/-}}"
+                build_configure_flags='--enable-multilib --enable-multiarch'
                 is_cross_compiler=0
                 break
             fi
@@ -145,6 +154,7 @@ environment() {
       arm-*-*eabihf)
             build_configure_flags="${build_configure_flags} \
                 --with-arch=armv7-a --with-fpu=vfpv3-d16 --with-float=hard --with-mode=thumb"
+            build_prebuild_script="${cache_dir}/patches/arm-multilib.sh"
             ;;
       arm*-*-*eabi)
             build_configure_flags="${build_configure_flags} \
@@ -206,6 +216,11 @@ configure() {
         tar -xf ${cache_dir}/infrastructure/${prereq}
         ln -s "${prereq%.tar*}" "${prereq%-*}"
     done
+
+    ## Apply any ad-hoc fixes to the sources.
+    if [ "${build_prebuild_script}" != "" ]; then
+       source ${build_prebuild_script}
+    fi
 
     ## Create the build directory.
     # Build typically takes around 10 minutes with -j4, could this be cached across CI runs?
