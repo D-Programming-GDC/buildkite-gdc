@@ -40,6 +40,8 @@ for target in "${targets[@]}"; do
     if [ "${native_targets[$name]:-x}" != 'x' ]; then
         if [ `expr "${BUILDKITE_BRANCH}" : 'stable'` -ne 0 ]; then
             host='native'
+        elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : 'stable'` -ne 0 ]; then
+            host='native'
         else
             host='cross'
         fi
