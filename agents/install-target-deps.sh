@@ -12,8 +12,20 @@
 target=${1}
 gcc_versions=(5 6 7)
 install_packages="autogen autoconf2.64 automake1.11 bison dejagnu flex make patch"
-binutils_packages="binutils"
-libc_packages="libc6-dev"
+
+if [ "${target}" = "" ]; then
+    binutils_packages=
+    libc_packages=
+else
+    binutils_packages="binutils"
+    libc_packages="libc6-dev"
+
+    install_packages="${install_packages} gcc g++ gdc"
+    for version in ${gcc_versions[@]}; do
+        install_packages="${install_packages} \
+            gcc-${version} g++-${version} gdc-${version}"
+    done
+fi
 
 # Install base dependencies.
 apt-get update -qq
@@ -22,14 +34,8 @@ apt-get install --no-install-recommends -qq \
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
 apt-get update -qq
 
-install_packages="${install_packages} gcc g++ gdc"
-for version in ${gcc_versions[@]}; do
-    install_packages="${install_packages} \
-        gcc-${version} g++-${version} gdc-${version}"
-done
-
 # Do we need something more specific for the worker?
-case ${target} in
+case "${target}" in
     ubuntu-cross-all)
         binutils_packages="${binutils_packages} \
             binutils-aarch64-linux-gnu \

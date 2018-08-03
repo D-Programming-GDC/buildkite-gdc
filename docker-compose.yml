@@ -15,7 +15,15 @@ services:
     volumes:
       - /srv/buildkite/cache:/buildkite/cache
 
-  ## Buildkit ARM64 agent
+  ## Buildkite pipeline agent
+  buildkite-pipeline:
+    extends: buildkite
+    hostname: pipeline-builder
+    build:
+      args:
+        IMAGE: ubuntu
+
+  ## Buildkite ARM64 agent
   buildkite-arm64:
     extends: buildkite
     hostname: ubuntu-arm64
@@ -28,7 +36,7 @@ services:
         IMAGE: arm64v8/ubuntu
         TARGET: ubuntu-native-arm64
 
-  ## Buildkit ARMv7 agent
+  ## Buildkite ARMv7 agent
   buildkite-arm32:
     extends: buildkite
     hostname: ubuntu-arm32
@@ -42,7 +50,7 @@ services:
         IMAGE: arm32v7/ubuntu
         TARGET: ubuntu-native-arm32
 
-  ## Buildkit cross agents
+  ## Buildkite cross agents
   buildkite-cross1:
     extends: buildkite
     hostname: ubuntu-cross1
