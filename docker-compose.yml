@@ -57,6 +57,7 @@ services:
     environment:
       BUILDKITE_AGENT_TAGS: |-
         cross=1,
+        native=1,
         ubuntu-aarch64=1,
         ubuntu-arm=1,
         ubuntu-armhf=1,
@@ -66,6 +67,7 @@ services:
         ubuntu-powerpc64le=1,
         ubuntu-systemz=1,
         ubuntu-sparc64=1,
+        ubuntu-x86_64=1
     build:
       args:
         IMAGE: ubuntu

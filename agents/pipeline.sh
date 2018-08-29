@@ -19,13 +19,16 @@ targets=(
     'ubuntu-systemz/s390x-linux-gnu'
     #'ubuntu-sh4/sh4-linux-gnu'
     'ubuntu-sparc64/sparc64-linux-gnu'
+    'ubuntu-x86_64/x86_64-linux-gnu'
 )
 
 # Agents where host == target.
 declare -A native_targets
-native_targets['ubuntu-arm']=1
-native_targets['ubuntu-armhf']=1
-native_targets['ubuntu-aarch64']=1
+native_targets['ubuntu-x86_64']=1
+declare -A native_ports
+native_ports['ubuntu-arm']=1
+native_ports['ubuntu-armhf']=1
+native_ports['ubuntu-aarch64']=1
 
 cat << 'EOF'
 steps:
@@ -34,17 +37,26 @@ EOF
 for target in "${targets[@]}"; do
     name=$(cut -d/ -f1 <<< ${target})
     triplet=$(cut -d/ -f2 <<< ${target})
+    bootstrap='disable'
 
-    # Don't build the self-hosted compiler on native platforms.
+    # Don't build the self-hosted compiler on native ports.
     # Unfortunately we don't have a working D compiler for them.
-    if [ "${native_targets[$name]:-x}" != 'x' ]; then
-        if [ `expr "${BUILDKITE_BRANCH}" : 'stable'` -ne 0 ]; then
+    if [ "${native_ports[$name]:-x}" != 'x' ]; then
+        if [ `expr "${BUILDKITE_BRANCH}" : '.*stable'` -ne 0 ]; then
             host='native'
-        elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : 'stable'` -ne 0 ]; then
+        elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : '.*stable'` -ne 0 ]; then
             host='native'
         else
             host='cross'
         fi
+    elif [ "${native_targets[$name]:-x}" != 'x' ]; then
+        # Test bootstrap builds on master branches where supported.
+        if [ `expr "${BUILDKITE_BRANCH}" : '.*stable'` -eq 0 ]; then
+            bootstrap='enable'
+        elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : '.*stable'` -eq 0 ]; then
+            bootstrap='enable'
+        fi
+        host='native'
     else
         host='cross'
     fi
@@ -63,6 +75,7 @@ cat << EOF
     env:
       BUILDKITE_TARGET: ${triplet}
       BUILDKITE_CACHE_DIR: '/buildkite/cache'
+      BUILDKITE_BOOTSTRAP: ${bootstrap}
     agents:
       - ${name}=1
       - ${host}=1

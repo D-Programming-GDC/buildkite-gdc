@@ -11,6 +11,7 @@
 #
 # - BUILDKITE_CACHE_DIR
 # - BUILDKITE_TARGET
+# - BUILDKITE_BOOTSTRAP
 #
 # See https://buildkite.com/docs/builds/environment-variables
 #
@@ -73,6 +74,7 @@ environment() {
     # build_target:             target triplet of the compiler to build.
     # build_target_canonical:   canonical version of target triplet.
     # make_flags:               flags to pass to make.
+    # build_bootstrap:          whether to enable bootstrap build.
     #
     if [ "${SEMAPHORE}" = "true" ]; then
         project_dir=${SEMAPHORE_PROJECT_DIR}
@@ -82,6 +84,7 @@ environment() {
         build_target=${build_host}
         build_target_canonical=${build_host_canonical}
         make_flags="-j$(nproc)"
+        build_bootstrap="disable"
     elif [ "${BUILDKITE}" = "true" ]; then
         project_dir=${PWD}
         cache_dir=${BUILDKITE_CACHE_DIR}
@@ -90,6 +93,7 @@ environment() {
         build_target=${BUILDKITE_TARGET}
         build_target_canonical=$(/usr/share/misc/config.sub ${build_target})
         make_flags="-j$(nproc) -sw"
+        build_bootstrap=${BUILDKITE_BOOTSTRAP}
     else
         echo "Unhandled CI environment"
         exit 1
@@ -153,7 +157,21 @@ environment() {
     fi
 
     if [ "${build_target_phobos}" = "" ]; then
-	build_target_phobos="${build_target}/libphobos"
+        build_target_phobos="${build_target}/libphobos"
+    fi
+
+    # Unless requested, don't build with multilib.
+    if [ `expr "${build_configure_flags}" : '.*enable-multilib'` -eq 0 ]; then
+        build_configure_flags="--disable-multilib ${build_configure_flags}"
+    fi
+
+    # If bootstrapping, be sure to turn off slow tree checking.
+    if [ "${build_bootstrap}" = "enable" ]; then
+        build_configure_flags="${build_configure_flags} \
+            --enable-bootstrap --enable-checking=release"
+    else
+        build_configure_flags="${build_configure_flags} \
+            --disable-bootstrap --enable-checking"
     fi
 
     # Determine correct flags for configuring a compiler for target.
@@ -178,6 +196,8 @@ environment() {
       powerpc64*-*-*)
             build_configure_flags="${build_configure_flags} \
                 --with-cpu=power7"
+            ;;
+      x86_64-*-*)
             ;;
       *)
             build_supports_phobos='no'
@@ -236,9 +256,9 @@ configure() {
 
     ## Configure GCC to build a D compiler.
     ${project_dir}/configure --prefix=/usr --libdir=/usr/lib --libexecdir=/usr/lib --with-sysroot=/ \
-        --enable-languages=${build_enable_languages} --enable-checking --enable-link-mutex \
-        --disable-bootstrap --disable-werror --disable-libgomp --disable-libmudflap \
-        --disable-libquadmath --disable-libitm --disable-libsanitizer --disable-multilib \
+        --enable-languages=${build_enable_languages} --enable-link-mutex \
+        --disable-werror --disable-libgomp --disable-libmudflap \
+        --disable-libquadmath --disable-libitm --disable-libsanitizer \
         --build=${build_host} --host=${build_host} --target=${build_target} \
         ${build_configure_flags} --with-bugurl="http://bugzilla.gdcproject.org"
 }
@@ -250,14 +270,20 @@ setup() {
 }
 
 build() {
-    ## Build the bare-minimum in order to run tests.
-    cd ${project_dir}/build
-    make ${make_flags} all-gcc || exit 1
+    if [ "${build_bootstrap}" = "enable" ]; then
+        ## Build the entire project to completion.
+        cd ${project_dir}/build
+        make ${make_flags}
+    else
+        ## Build the bare-minimum in order to run tests.
+        cd ${project_dir}/build
+        make ${make_flags} all-gcc || exit 1
 
-    # Note: libstdc++ and libphobos are built separately so that build errors don't mix.
-    if [ "${build_supports_phobos}" = "yes" ]; then
-        make ${make_flags} all-target-libstdc++-v3 || exit 1
-        make ${make_flags} all-target-libphobos || exit 1
+        # Note: libstdc++ and libphobos are built separately so that build errors don't mix.
+        if [ "${build_supports_phobos}" = "yes" ]; then
+            make ${make_flags} all-target-libstdc++-v3 || exit 1
+            make ${make_flags} all-target-libphobos || exit 1
+        fi
     fi
 }
 
