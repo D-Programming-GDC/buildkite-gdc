@@ -57,7 +57,7 @@ services:
     environment:
       BUILDKITE_AGENT_TAGS: |-
         cross=1,
-        native=1,
+        bootstrap=1,
         ubuntu-aarch64=1,
         ubuntu-arm=1,
         ubuntu-armhf=1,

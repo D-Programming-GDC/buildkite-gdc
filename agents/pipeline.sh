@@ -56,7 +56,7 @@ for target in "${targets[@]}"; do
         elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : '.*stable'` -eq 0 ]; then
             bootstrap='enable'
         fi
-        host='native'
+        host='bootstrap'
     else
         host='cross'
     fi
