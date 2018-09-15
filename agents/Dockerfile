@@ -1,7 +1,7 @@
 # The base image for this container
 ARG IMAGE
 
-FROM $IMAGE:16.04
+FROM $IMAGE:18.04
 
 # The target(s) that the worker will build for.
 ARG TARGET

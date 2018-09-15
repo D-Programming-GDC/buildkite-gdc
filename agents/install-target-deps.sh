@@ -29,8 +29,8 @@ fi
 
 # Install base dependencies.
 apt-get update -qq
-apt-get install --no-install-recommends -qq \
-    apt-transport-https bzip2 curl software-properties-common xz-utils
+DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -qq \
+    apt-transport-https bzip2 curl dirmngr gpg-agent software-properties-common xz-utils
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
 apt-get update -qq
 
@@ -109,14 +109,14 @@ case "${target}" in
         ;;
 esac
 
-apt-get install --no-install-recommends -qq \
+DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -qq \
     $install_packages $binutils_packages $libc_packages
 
 # Install buildkite agent.
 echo "deb https://apt.buildkite.com/buildkite-agent stable main" > /etc/apt/sources.list.d/buildkite-agent.list
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 32A37959C2FA5C3C99EFBC32A79206696452D198
 apt-get update -qq
-apt-get install -qq buildkite-agent
+DEBIAN_FRONTEND=noninteractive apt-get install -qq buildkite-agent
 
 # Clean-up.
 apt-get clean
