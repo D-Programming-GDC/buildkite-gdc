@@ -193,7 +193,11 @@ environment() {
             build_configure_flags="${build_configure_flags} \
                 --with-arch-64=mips64r2 --with-abi=64"
             ;;
-      powerpc64*-*-*)
+      powerpc64le-*-*)
+            build_configure_flags="${build_configure_flags} \
+                --with-cpu=power8 --with-long-double-format=ieee"
+            ;;
+      powerpc64-*-*)
             build_configure_flags="${build_configure_flags} \
                 --with-cpu=power7"
             ;;
