@@ -64,13 +64,13 @@ cat << EOF
   - label: "${name}"
     command: |
       echo "--- Configure gdc"
-      /buildkite/buildci.sh configure
+      ./buildci.sh configure
       echo "--- Build gdc"
-      /buildkite/buildci.sh build
+      ./buildci.sh build
       echo "--- Run testsuite"
-      /buildkite/buildci.sh testsuite
+      ./buildci.sh testsuite
       echo "--- Run unittests"
-      /buildkite/buildci.sh unittests
+      ./buildci.sh unittests
     env:
       BUILDKITE_TARGET: ${triplet}
       BUILDKITE_CACHE_DIR: '/buildkite/cache'
