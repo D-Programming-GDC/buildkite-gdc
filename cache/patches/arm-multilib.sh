@@ -1,6 +1,6 @@
 # Fix multilib support on ARM to test soft-float ABI on a hard-float host.
 # Taken and abridged from Ubuntu patches.
-cat >> gcc/config/arm/linux-eabi.h << EOF
+cat >> gcc/gcc/config/arm/linux-eabi.h << EOF
 
 #undef  TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_HARD
@@ -17,7 +17,7 @@ cat >> gcc/config/arm/linux-eabi.h << EOF
          "mfloat-abi=hard", "mno-thumb-interwork" }
 EOF
 
-cat >> gcc/config/arm/t-linux-eabi << EOF
+cat >> gcc/gcc/config/arm/t-linux-eabi << EOF
 
 MULTILIB_OPTIONS       = mfloat-abi=soft/mfloat-abi=hard
 MULTILIB_DIRNAMES      = sf hf
