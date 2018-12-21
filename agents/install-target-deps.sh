@@ -50,7 +50,6 @@ case "${target}" in
             binutils-mips64el-linux-gnuabi64 \
             binutils-mipsel-linux-gnu \
             binutils-powerpc-linux-gnu \
-            binutils-powerpc-linux-gnuspe \
             binutils-powerpc64-linux-gnu \
             binutils-powerpc64le-linux-gnu \
             binutils-s390x-linux-gnu \
@@ -79,7 +78,6 @@ case "${target}" in
             libc6-dev-mipsn32-mipsel-cross \
             libc6-dev-powerpc-cross \
             libc6-dev-powerpc-ppc64-cross \
-            libc6-dev-powerpcspe-cross \
             libc6-dev-ppc64-cross \
             libc6-dev-ppc64-powerpc-cross \
             libc6-dev-ppc64el-cross \

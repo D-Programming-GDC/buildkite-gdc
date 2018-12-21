@@ -13,7 +13,6 @@ targets=(
     'ubuntu-mips64el/mips64el-linux-gnuabi64'
     'ubuntu-mipsel/mipsel-linux-gnu'
     #'ubuntu-powerpc/powerpc-linux-gnu'
-    #'ubuntu-powerpc-spe/powerpc-linux-gnuspe'
     #'ubuntu-powerpc64/powerpc64-linux-gnu'
     'ubuntu-powerpc64le/powerpc64le-linux-gnu'
     'ubuntu-systemz/s390x-linux-gnu'
