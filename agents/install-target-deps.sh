@@ -30,7 +30,7 @@ fi
 # Install base dependencies.
 apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -qq \
-    apt-transport-https bzip2 curl dirmngr gpg-agent software-properties-common xz-utils
+    apt-transport-https bzip2 curl dirmngr gpg-agent rsync software-properties-common xz-utils unzip
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
 apt-get update -qq
 
