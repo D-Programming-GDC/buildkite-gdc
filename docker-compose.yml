@@ -19,6 +19,10 @@ services:
   buildkite-pipeline:
     extends: buildkite
     hostname: pipeline-builder
+    environment:
+      BUILDKITE_DISABLE_GIT_SUBMODULES: 'true'
+      BUILDKITE_AGENT_TAGS: |-
+        pipeline=1
     build:
       args:
         IMAGE: ubuntu
