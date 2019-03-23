@@ -11,7 +11,7 @@
 
 target=${1}
 gcc_versions=(5 6 7)
-install_packages="autogen autoconf2.64 automake1.11 bison dejagnu flex make patch"
+install_packages="autogen autoconf2.64 automake1.11 bison dejagnu flex make patch pxz"
 
 if [ "${target}" = "" ]; then
     binutils_packages=
