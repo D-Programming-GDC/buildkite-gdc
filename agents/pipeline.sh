@@ -78,6 +78,8 @@ cat << EOF
     agents:
       - ${name}=1
       - ${host}=1
+    artifact_paths:
+      - "logs/**/*"
 
 EOF
 done
