@@ -11,6 +11,8 @@ WORKDIR /buildkite
 # Switch USER back to root to install common packages.
 USER root
 
+ENV BUILD_TIMESTAMP 20191108
+
 # Target specific dependencies.
 COPY install-target-deps.sh /buildkite/install-target-deps.sh
 RUN bash install-target-deps.sh $TARGET
