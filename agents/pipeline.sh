@@ -41,18 +41,18 @@ for target in "${targets[@]}"; do
     # Don't build the self-hosted compiler on native ports.
     # Unfortunately we don't have a working D compiler for them.
     if [ "${native_ports[$name]:-x}" != 'x' ]; then
-        if [ `expr "${BUILDKITE_BRANCH}" : '.*stable'` -ne 0 ]; then
+        if [ `expr "${BUILDKITE_BRANCH}" : '.*trunk-ci'` -ne 0 ]; then
             host='native'
-        elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : '.*stable'` -ne 0 ]; then
+        elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : '.*trunk-ci'` -ne 0 ]; then
             host='native'
         else
             host='cross'
         fi
     elif [ "${native_targets[$name]:-x}" != 'x' ]; then
         # Test bootstrap builds on master branches where supported.
-        if [ `expr "${BUILDKITE_BRANCH}" : '.*stable'` -eq 0 ]; then
+        if [ `expr "${BUILDKITE_BRANCH}" : '.*trunk-ci'` -eq 0 ]; then
             bootstrap='enable'
-        elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : '.*stable'` -eq 0 ]; then
+        elif [ `expr "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" : '.*trunk-ci'` -eq 0 ]; then
             bootstrap='enable'
         fi
         host='bootstrap'
