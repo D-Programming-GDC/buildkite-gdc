@@ -10,7 +10,7 @@
 #  libc_packages        List of all libc-related packages to install.
 
 target=${1}
-gcc_versions=(7 8 9)
+gcc_versions=(9)
 install_packages="autogen autoconf2.64 automake1.11 bison dejagnu flex make patch pxz"
 
 if [ "${target}" = "" ]; then

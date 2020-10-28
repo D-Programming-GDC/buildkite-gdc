@@ -25,9 +25,9 @@ targets=(
 declare -A native_targets
 native_targets['ubuntu-x86_64']=1
 declare -A native_ports
-native_ports['ubuntu-arm']=1
-native_ports['ubuntu-armhf']=1
-native_ports['ubuntu-aarch64']=1
+#native_ports['ubuntu-arm']=1
+#native_ports['ubuntu-armhf']=1
+#native_ports['ubuntu-aarch64']=1
 
 cat << 'EOF'
 steps:
