@@ -80,3 +80,7 @@ services:
   buildkite-cross2:
     extends: buildkite-cross1
     hostname: ubuntu-cross2
+
+  buildkite-cross3:
+    extends: buildkite-cross1
+    hostname: ubuntu-cross3
