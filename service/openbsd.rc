@@ -11,7 +11,7 @@ daemon_user="buildkite"
 . /etc/rc.d/rc.subr
 
 rc_start() {
-        ${rcexec} "${daemon} ${daemon_flags}" &
+        ${rcexec} "${daemon} ${daemon_flags} 2>&1 | logger -i -t ${daemon_user}" &
 }
 
 rc_cmd $1
