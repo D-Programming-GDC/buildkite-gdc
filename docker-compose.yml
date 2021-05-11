@@ -9,6 +9,7 @@ services:
       BUILDKITE_BUILD_PATH: '/buildkite'
       BUILDKITE_NO_PLUGINS: 'true'
       BUILDKITE_AGENT_NO_LOCAL_HOOKS: 'true'
+      BUILDKITE_GIT_CLONE_FLAGS: '-v --depth 50'
       BUILDKITE_TIMEOUT: 14400
     env_file:
       - agents/secrets.env
