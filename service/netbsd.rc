@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# GDC Buildkite CI agent
+# Iain Buclaw <ibuclaw@gdcproject.org>
+#
+
+# PROVIDE: buildkite
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+
+$_rc_subr_loaded . /etc/rc.subr
+
+name="buildkite"
+rcvar=$name
+command="/buildkite/bin/buildkite-agent"
+
+buildkite_flags="start --config /buildkite/buildkite-agent.cfg 2>&1 | logger -i -t ${name} &"
+buildkite_user="buildkite"
+buildkite_chdir="/buildkite"
+buildkite_env="HOME=/buildkite"
+
+load_rc_config $name
+run_rc_command "$1"
