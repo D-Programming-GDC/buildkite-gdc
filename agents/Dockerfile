@@ -1,7 +1,7 @@
 # The base image for this container
 ARG IMAGE
 
-FROM $IMAGE:18.04
+FROM $IMAGE
 
 # The target(s) that the worker will build for.
 ARG TARGET
@@ -15,7 +15,7 @@ ENV BUILD_TIMESTAMP 20210511
 
 # Target specific dependencies.
 COPY install-target-deps.sh /buildkite/install-target-deps.sh
-RUN bash install-target-deps.sh $TARGET
+RUN sh install-target-deps.sh $TARGET
 
 COPY baseboards/*.exp /usr/share/dejagnu/baseboards/
 COPY config/*.exp /usr/share/dejagnu/config/
