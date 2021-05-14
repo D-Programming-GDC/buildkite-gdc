@@ -19,6 +19,7 @@ targets=(
     #'ubuntu-sh4/sh4-linux-gnu/linux'
     'ubuntu-sparc64/sparc64-linux-gnu/linux'
     'ubuntu-x86_64/x86_64-linux-gnu/linux'
+    'alpine-x86_64/x86_64-alpine-linux-musl/alpine'
     'netbsd-x86_64/x86_64--netbsd/netbsd'
     'openbsd-amd64/amd64-unknown-openbsd6.9/openbsd'
 )
@@ -29,6 +30,7 @@ native_targets['ubuntu-x86_64']=1
 #native_targets['ubuntu-arm']=1
 #native_targets['ubuntu-armhf']=1
 #native_targets['ubuntu-aarch64']=1
+native_targets['alpine-x86_64']=1
 native_targets['netbsd-x86_64']=1
 native_targets['openbsd-amd64']=1
 
