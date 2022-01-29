@@ -26,7 +26,7 @@ services:
         pipeline=1
     build:
       args:
-        IMAGE: ubuntu:18.04
+        IMAGE: ubuntu:20.04
 
   ## Buildkite ARM64 agent
   buildkite-arm64:
@@ -38,7 +38,7 @@ services:
         ubuntu-aarch64=1,
     build:
       args:
-        IMAGE: arm64v8/ubuntu:18.04
+        IMAGE: arm64v8/ubuntu:20.04
         TARGET: ubuntu-native-arm64
 
   ## Buildkite ARMv7 agent
@@ -52,7 +52,7 @@ services:
         ubuntu-armhf=1,
     build:
       args:
-        IMAGE: arm32v7/ubuntu:18.04
+        IMAGE: arm32v7/ubuntu:20.04
         TARGET: ubuntu-native-arm32
 
   ## Buildkite Alpine agent
@@ -88,7 +88,7 @@ services:
         ubuntu-x86_64=1
     build:
       args:
-        IMAGE: ubuntu:18.04
+        IMAGE: ubuntu:20.04
         TARGET: ubuntu-cross-all
 
   buildkite-cross2:
