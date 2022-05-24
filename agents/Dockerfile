@@ -20,6 +20,8 @@ RUN sh install-target-deps.sh $TARGET
 COPY baseboards/*.exp /usr/share/dejagnu/baseboards/
 COPY config/*.exp /usr/share/dejagnu/config/
 COPY pipeline.sh /buildkite/pipeline.sh
+COPY pipeline-hooks/* /buildkite/pipeline/hooks/
+RUN chmod +x /buildkite/pipeline/hooks/*
 
 RUN chown -R buildkite-agent:buildkite-agent /buildkite
 USER buildkite-agent

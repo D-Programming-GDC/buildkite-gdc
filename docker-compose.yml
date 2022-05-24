@@ -8,7 +8,7 @@ services:
       BUILDKITE_AGENT_NAME: '%hostname'
       BUILDKITE_BUILD_PATH: '/buildkite'
       BUILDKITE_NO_PLUGINS: 'true'
-      BUILDKITE_AGENT_NO_LOCAL_HOOKS: 'true'
+      BUILDKITE_NO_LOCAL_HOOKS: 'true'
       BUILDKITE_GIT_CLONE_FLAGS: '-v --depth 50'
       BUILDKITE_TIMEOUT: 14400
     env_file:
@@ -21,7 +21,8 @@ services:
     extends: buildkite
     hostname: pipeline-builder
     environment:
-      BUILDKITE_DISABLE_GIT_SUBMODULES: 'true'
+      BUILDKITE_NO_LOCAL_HOOKS: 'false'
+      BUILDKITE_HOOKS_PATH: '/buildkite/pipeline/hooks'
       BUILDKITE_AGENT_TAGS: |-
         pipeline=1
     build:
